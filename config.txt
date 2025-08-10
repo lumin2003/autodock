@@ -1,0 +1,12 @@
+receptor = SCD_re.pdbqt
+
+center_x = 19.19582658
+center_y = 66.69252699
+center_z = 39.87524008
+size_x = 47.25
+size_y = 47.25
+size_z = 47.25
+
+exhaustiveness = 8
+energy_range =3
+num_modes =3
