@@ -1,0 +1,26 @@
+$AMBERHOME/bin/antechamber -i ligand.pdb -fi pdb -o ligand.mol2 -fo mol2 -c bcc -nc 0 -s 2 -rn UNL
+parmchk2 -i ligand.mol2 -f mol2 -o ligand.frcmod
+pdb4amber -i lig.pdb -o rec.pdb -y –reduce
+tleap
+source leaprc.protein.ff14SB
+source leaprc.water.tip3p
+source leaprc.gaff2
+set default pbradii bondi
+loadamberparams frcmod.ionsjc_tip3p
+loadamberparams ligand.frcmod
+rec = loadpdb SCD.pdb
+lig = loadmol2 ligand.mol2
+complex = combine{rec, lig}
+addions complex Na+ 0
+addions complex Cl- 0
+solvatebox complex TIP3PBOX 8
+saveamberparm complex com.prmtop com.inpcrd
+savepdb complex complex.pdb
+sinteractive --gres=gpu:v100:1 --mem=16g --cpus-per-task=8 --time=16:00:00
+module load amber/22
+1 pmemd.cuda -O -i min.in -o min.out -p com.prmtop -c com.inpcrd -r min.rst -ref com.inpcrd
+2 pmemd.cuda -O -i heat.in -o heat.out -p com.prmtop -c min.rst -r heat.rst -x heat.nc -ref com.inpcrd
+3 pmemd.cuda -O -i density.in -o density.out -p com.prmtop -c heat.rst -r density.rst -x density.nc -ref com.inpcrd
+4 pmemd.cuda -O -i equil.in -o equil.out -p com.prmtop -c density.rst -r equil.rst -x equil.nc -ref com.inpcrd
+5 pmemd.cuda -O -i prod.in -o prod.out -p com.prmtop -c equil.rst -r prod.rst -x prod.nc
+
